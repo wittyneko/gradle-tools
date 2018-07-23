@@ -1,0 +1,68 @@
+
+apply plugin: 'maven'
+//apply plugin: 'org.jetbrains.dokka'
+
+//group = "cn.wittyneko"
+//archivesBaseName = "ktx-base"
+//version = "1.0.0-SNAPSHOT"
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    //title = ''
+    //description = ''
+
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    options {
+        encoding 'utf-8'
+        charSet 'utf-8'
+        links 'http://docs.oracle.com/javase/7/docs/api/'
+        linksOffline "https://developer.android.com/reference", "${android.sdkDirectory}/docs/reference"
+    }
+    exclude '**/BuildConfig.java'
+    exclude '**/R.java'
+    failOnError false
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+//task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+//    outputFormat = "javadoc"
+//    outputDirectory = javadoc.destinationDir
+//}
+//
+//task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
+
+artifacts {
+    archives sourcesJar
+    //archives javadocJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            def user = rootProject.uploadUserName
+            def password = rootProject.uploadPassword
+            println "upload user: $user, passowrd: $password"
+
+            repository(url: rootProject.ext.uploadMaven) {
+                println "uploadArchives $url"
+                authentication(userName: user, password: password)
+            }
+            snapshotRepository(url: rootProject.ext.uploadMavenSnapshots) {
+                println "uploadArchives $url"
+                authentication(userName: user, password: password)
+            }
+        }
+    }
+}
