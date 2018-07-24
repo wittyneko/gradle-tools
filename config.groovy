@@ -8,6 +8,7 @@ def get_UserHome() {
     userHome
 }
 
+//config.properties解析
 def get_ConfigProperties() {
     if (!rootProject.hasProperty('configProperties')) {
 
@@ -64,11 +65,23 @@ def get_SdkPath() {
     return sdkPath
 }
 
+//是否能访问Google
+def get_GoogleConnected() {
+    if (!rootProject.hasProperty('googleConnected')) {
+        def result = 'curl -I -m 3 -o /dev/null -s -w %{http_code} www.google.com'.execute().text
+        def googleConnected = result == '200'
+        println "$result, $googleConnected"
+        return googleConnected
+    }
+    return googleConnected
+}
+
 ext {
     userHome = _UserHome
     localProperties = _LocalProperties
     configProperties = _ConfigProperties
     sdkPath = _SdkPath
+    googleConnected = _GoogleConnected
 }
 
 def __configPath = "$rootDir"
@@ -82,8 +95,8 @@ def __uploadPassword = 'admin123'
 def __androidcfg = [
         pluginVersion    : "3.0.0",
         //////////////////////////////////
-        compileSdkVersion: 27,
         buildToolsVersion: "27.0.3",
+        compileSdkVersion: 27,
         minSdkVersion    : 20,
         targetSdkVersion : 27,
         versionCode      : 1,
@@ -105,11 +118,11 @@ def _uploadPassword = _ConfigProperties.getProperty('uploadPassword', __uploadPa
 def _androidcfg = [
         pluginVersion    : _ConfigProperties.getOrDefault('androidcfg.pluginVersion', __androidcfg.pluginVersion),
         //////////////////////////////////
-        compileSdkVersion: _ConfigProperties.getOrDefault('androidcfg.compileSdkVersion', __androidcfg.compileSdkVersion),
         buildToolsVersion: _ConfigProperties.getOrDefault('androidcfg.buildToolsVersion', __androidcfg.buildToolsVersion),
-        minSdkVersion    : _ConfigProperties.getOrDefault('androidcfg.minSdkVersion', __androidcfg.minSdkVersion),
-        targetSdkVersion : _ConfigProperties.getOrDefault('androidcfg.targetSdkVersion', __androidcfg.targetSdkVersion),
-        versionCode      : _ConfigProperties.getOrDefault('androidcfg.versionCode', __androidcfg.versionCode),
+        compileSdkVersion: _ConfigProperties.getOrDefault('androidcfg.compileSdkVersion', __androidcfg.compileSdkVersion),
+        minSdkVersion    : _ConfigProperties.getOrDefault('androidcfg.minSdkVersion', __androidcfg.minSdkVersion) as Integer,
+        targetSdkVersion : _ConfigProperties.getOrDefault('androidcfg.targetSdkVersion', __androidcfg.targetSdkVersion) as Integer,
+        versionCode      : _ConfigProperties.getOrDefault('androidcfg.versionCode', __androidcfg.versionCode) as Integer,
         versionName      : _ConfigProperties.getOrDefault('androidcfg.versionName', __androidcfg.versionName),
         supportVersion   : _ConfigProperties.getOrDefault('androidcfg.supportVersion', __androidcfg.supportVersion),
         kotlin_version   : _ConfigProperties.getOrDefault('androidcfg.kotlin_version', __androidcfg.kotlin_version),
@@ -128,11 +141,11 @@ ext {
     androidcfg = [
             pluginVersion    : _LocalProperties.getOrDefault('androidcfg.pluginVersion', _androidcfg.pluginVersion),
             //////////////////////////////////
-            compileSdkVersion: _LocalProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion),
             buildToolsVersion: _LocalProperties.getOrDefault('androidcfg.buildToolsVersion', _androidcfg.buildToolsVersion),
-            minSdkVersion    : _LocalProperties.getOrDefault('androidcfg.minSdkVersion', _androidcfg.minSdkVersion),
-            targetSdkVersion : _LocalProperties.getOrDefault('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion),
-            versionCode      : _LocalProperties.getOrDefault('androidcfg.versionCode', _androidcfg.versionCode),
+            compileSdkVersion: _LocalProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion),
+            minSdkVersion    : _LocalProperties.getOrDefault('androidcfg.minSdkVersion', _androidcfg.minSdkVersion) as Integer,
+            targetSdkVersion : _LocalProperties.getOrDefault('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion) as Integer,
+            versionCode      : _LocalProperties.getOrDefault('androidcfg.versionCode', _androidcfg.versionCode) as Integer,
             versionName      : _LocalProperties.getOrDefault('androidcfg.versionName', _androidcfg.versionName),
             supportVersion   : _LocalProperties.getOrDefault('androidcfg.supportVersion', _androidcfg.supportVersion),
             kotlin_version   : _LocalProperties.getOrDefault('androidcfg.kotlin_version', _androidcfg.kotlin_version),
