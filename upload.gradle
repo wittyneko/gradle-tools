@@ -55,11 +55,11 @@ uploadArchives {
             def password = rootProject.uploadPassword
             println "upload user: $user, passowrd: $password"
 
-            repository(url: rootProject.ext.uploadMaven) {
+            repository(url: rootProject.uploadMaven) {
                 println "uploadArchives $url"
                 authentication(userName: user, password: password)
             }
-            snapshotRepository(url: rootProject.ext.uploadMavenSnapshots) {
+            snapshotRepository(url: rootProject.uploadMavenSnapshots) {
                 println "uploadArchives $url"
                 authentication(userName: user, password: password)
             }
