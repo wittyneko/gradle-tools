@@ -1,54 +1,74 @@
 //获取系统用户目录
 def get_UserHome() {
-    String home = System.properties['user.home']
-    println("userHome: $home")
-    return home
+    if (!rootProject.hasProperty('userHome')) {
+        String home = System.properties['user.home']
+        println("userHome: $home")
+        return home
+    }
+    userHome
 }
 
 def get_ConfigProperties() {
-    Properties properties = new Properties()
-    File f = rootProject.file('config.properties')
-    if (f.isFile()) {
-        println("configProperties: ${f.absolutePath}")
-        properties.load(f.newDataInputStream())
+    if (!rootProject.hasProperty('configProperties')) {
+
+        Properties properties = new Properties()
+        File f = rootProject.file('config.properties')
+        if (f.isFile()) {
+            println("configProperties: ${f.absolutePath}")
+            properties.load(f.newDataInputStream())
+        }
+        return properties
     }
-    return properties
+    return configProperties
 }
 
 //获取local.properties解析
 def get_LocalProperties() {
-    Properties properties = new Properties()
-    File f = rootProject.file('local.properties')
-    if (f.isFile()) {
-        println("localProperties: ${f.absolutePath}")
-        properties.load(f.newDataInputStream())
+    if (!rootProject.hasProperty('localProperties')) {
+        Properties properties = new Properties()
+        File f = rootProject.file('local.properties')
+        if (f.isFile()) {
+            println("localProperties: ${f.absolutePath}")
+            properties.load(f.newDataInputStream())
+        }
+        return properties
     }
-    return properties
+    return localProperties
 }
 
 //获取Android SDK目录
 def get_SdkPath() {
-    String DEF_PATH = "/opt/android-sdk-linux"
-    String sdkPath = null
-    Properties properties = localProperties
-    if (properties != null) {
-        sdkPath = properties.getProperty('sdk.dir')
-        println("sdk.dir: $sdkPath")
+    if (!rootProject.hasProperty('sdkPath')) {
+        String DEF_PATH = "/opt/android-sdk-linux"
+        String sdkPath = null
+        Properties properties = localProperties
+        if (properties != null) {
+            sdkPath = properties.getProperty('sdk.dir')
+            println("sdk.dir: $sdkPath")
+        }
+        if (sdkPath == null) {
+            sdkPath = System.getenv()['ANDROID_HOME']
+            println("ANDROID_HOME: $sdkPath")
+        }
+        if (sdkPath == null) {
+            sdkPath = System.getenv()['ANDROID_SDK']
+            println("ANDROID_SDK: $sdkPath")
+        }
+        if (sdkPath == null) {
+            sdkPath = DEF_PATH
+            println("DEF_SDK: $sdkPath")
+        }
+        //println("sdkPath: ${sdkPath}")
+        return sdkPath
     }
-    if (sdkPath == null) {
-        sdkPath = System.getenv()['ANDROID_HOME']
-        println("ANDROID_HOME: $sdkPath")
-    }
-    if (sdkPath == null) {
-        sdkPath = System.getenv()['ANDROID_SDK']
-        println("ANDROID_SDK: $sdkPath")
-    }
-    if (sdkPath == null) {
-        sdkPath = DEF_PATH
-        println("DEF_SDK: $sdkPath")
-    }
-    //println("sdkPath: ${sdkPath}")
     return sdkPath
+}
+
+ext {
+    userHome = _UserHome
+    localProperties = _LocalProperties
+    configProperties = _ConfigProperties
+    sdkPath = _SdkPath
 }
 
 def __configPath = "$rootDir"
@@ -97,32 +117,26 @@ def _androidcfg = [
 ]
 
 ext {
-    userHome = _UserHome
-    localProperties = _LocalProperties
-    configProperties = _ConfigProperties
-    sdkPath = _SdkPath
-    configPath = localProperties.getProperty('configPath', _configPath)
+    configPath = _LocalProperties.getProperty('configPath', _configPath)
 
-    localMavenable = localProperties.getOrDefault('localMavenable', _localMavenable)
-    localMavenHost = localProperties.getProperty('localMavenHost', _localMavenHost)
-    defaultMaven = localProperties.getProperty('defaultMaven', _defaultMaven)
-    uploadUserName = localProperties.getProperty('uploadUserName', _uploadUserName)
-    uploadPassword = localProperties.getProperty('uploadPassword', _uploadPassword)
+    localMavenable = _LocalProperties.getOrDefault('localMavenable', _localMavenable)
+    localMavenHost = _LocalProperties.getProperty('localMavenHost', _localMavenHost)
+    defaultMaven = _LocalProperties.getProperty('defaultMaven', _defaultMaven)
+    uploadUserName = _LocalProperties.getProperty('uploadUserName', _uploadUserName)
+    uploadPassword = _LocalProperties.getProperty('uploadPassword', _uploadPassword)
 
     androidcfg = [
-            properties       : localProperties,
-            sdkPath          : sdkPath,
-            pluginVersion    : localProperties.getOrDefault('androidcfg.pluginVersion', _androidcfg.pluginVersion),
+            pluginVersion    : _LocalProperties.getOrDefault('androidcfg.pluginVersion', _androidcfg.pluginVersion),
             //////////////////////////////////
-            compileSdkVersion: localProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion),
-            buildToolsVersion: localProperties.getOrDefault('androidcfg.buildToolsVersion', _androidcfg.buildToolsVersion),
-            minSdkVersion    : localProperties.getOrDefault('androidcfg.minSdkVersion', _androidcfg.minSdkVersion),
-            targetSdkVersion : localProperties.getOrDefault('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion),
-            versionCode      : localProperties.getOrDefault('androidcfg.versionCode', _androidcfg.versionCode),
-            versionName      : localProperties.getOrDefault('androidcfg.versionName', _androidcfg.versionName),
-            supportVersion   : localProperties.getOrDefault('androidcfg.supportVersion', _androidcfg.supportVersion),
-            kotlin_version   : localProperties.getOrDefault('androidcfg.kotlin_version', _androidcfg.kotlin_version),
-            anko_version     : localProperties.getOrDefault('androidcfg.anko_version', _androidcfg.anko_version),
+            compileSdkVersion: _LocalProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion),
+            buildToolsVersion: _LocalProperties.getOrDefault('androidcfg.buildToolsVersion', _androidcfg.buildToolsVersion),
+            minSdkVersion    : _LocalProperties.getOrDefault('androidcfg.minSdkVersion', _androidcfg.minSdkVersion),
+            targetSdkVersion : _LocalProperties.getOrDefault('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion),
+            versionCode      : _LocalProperties.getOrDefault('androidcfg.versionCode', _androidcfg.versionCode),
+            versionName      : _LocalProperties.getOrDefault('androidcfg.versionName', _androidcfg.versionName),
+            supportVersion   : _LocalProperties.getOrDefault('androidcfg.supportVersion', _androidcfg.supportVersion),
+            kotlin_version   : _LocalProperties.getOrDefault('androidcfg.kotlin_version', _androidcfg.kotlin_version),
+            anko_version     : _LocalProperties.getOrDefault('androidcfg.anko_version', _androidcfg.anko_version),
     ]
 
     maven = [
@@ -132,9 +146,9 @@ ext {
             localGroup         : localMavenable ? "$localMavenHost/nexus/content/groups/public" : defaultMaven,
             localMaven         : "$localMavenHost/nexus/content/repositories/releases",
             localMavenSnapshots: "$localMavenHost/nexus/content/repositories/snapshots",
-            sdkMaven           : "file:${androidcfg.sdkPath}/extras/m2repository",
-            sdkAndroidMaven    : "file:${androidcfg.sdkPath}/extras/android/m2repository",
-            sdkGoogleMaven     : "file:${androidcfg.sdkPath}/extras/google/m2repository",
+            sdkMaven           : "file:${sdkPath}/extras/m2repository",
+            sdkAndroidMaven    : "file:${sdkPath}/extras/android/m2repository",
+            sdkGoogleMaven     : "file:${sdkPath}/extras/google/m2repository",
             aliyunMaven        : "http://maven.aliyun.com/nexus/content/groups/public",
             jcenter            : "http://jcenter.bintray.com",
             mavenCenter        : "https://repo1.maven.org/maven2/",
