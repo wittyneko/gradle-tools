@@ -119,7 +119,7 @@ def _androidcfg = [
         pluginVersion    : _ConfigProperties.getOrDefault('androidcfg.pluginVersion', __androidcfg.pluginVersion),
         //////////////////////////////////
         buildToolsVersion: _ConfigProperties.getOrDefault('androidcfg.buildToolsVersion', __androidcfg.buildToolsVersion),
-        compileSdkVersion: _ConfigProperties.getOrDefault('androidcfg.compileSdkVersion', __androidcfg.compileSdkVersion),
+        compileSdkVersion: _ConfigProperties.getOrDefault('androidcfg.compileSdkVersion', __androidcfg.compileSdkVersion) as Integer,
         minSdkVersion    : _ConfigProperties.getOrDefault('androidcfg.minSdkVersion', __androidcfg.minSdkVersion) as Integer,
         targetSdkVersion : _ConfigProperties.getOrDefault('androidcfg.targetSdkVersion', __androidcfg.targetSdkVersion) as Integer,
         versionCode      : _ConfigProperties.getOrDefault('androidcfg.versionCode', __androidcfg.versionCode) as Integer,
@@ -131,6 +131,9 @@ def _androidcfg = [
 
 ext {
     configPath = _LocalProperties.getProperty('configPath', _configPath)
+    if (configPath.startsWith('~')) {
+        configPath = "${userHome}${configPath.substring(1)}"
+    }
 
     localMavenable = _LocalProperties.getOrDefault('localMavenable', _localMavenable)
     localMavenHost = _LocalProperties.getProperty('localMavenHost', _localMavenHost)
@@ -142,7 +145,7 @@ ext {
             pluginVersion    : _LocalProperties.getOrDefault('androidcfg.pluginVersion', _androidcfg.pluginVersion),
             //////////////////////////////////
             buildToolsVersion: _LocalProperties.getOrDefault('androidcfg.buildToolsVersion', _androidcfg.buildToolsVersion),
-            compileSdkVersion: _LocalProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion),
+            compileSdkVersion: _LocalProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion) as Integer,
             minSdkVersion    : _LocalProperties.getOrDefault('androidcfg.minSdkVersion', _androidcfg.minSdkVersion) as Integer,
             targetSdkVersion : _LocalProperties.getOrDefault('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion) as Integer,
             versionCode      : _LocalProperties.getOrDefault('androidcfg.versionCode', _androidcfg.versionCode) as Integer,
