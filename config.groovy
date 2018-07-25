@@ -134,6 +134,9 @@ ext {
     if (configPath.startsWith('~')) {
         configPath = "${userHome}${configPath.substring(1)}"
     }
+    if (configPath.startsWith('http')) {
+        configPath = "$configPath/raw/master"
+    }
 
     localMavenable = Boolean.valueOf(_LocalProperties.getOrDefault('localMavenable', _localMavenable))
     localMavenHost = _LocalProperties.getProperty('localMavenHost', _localMavenHost)
