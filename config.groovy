@@ -135,7 +135,7 @@ ext {
         configPath = "${userHome}${configPath.substring(1)}"
     }
 
-    localMavenable = _LocalProperties.getOrDefault('localMavenable', _localMavenable)
+    localMavenable = Boolean.valueOf(_LocalProperties.getOrDefault('localMavenable', _localMavenable))
     localMavenHost = _LocalProperties.getProperty('localMavenHost', _localMavenHost)
     defaultMaven = _LocalProperties.getProperty('defaultMaven', _defaultMaven)
     uploadUserName = _LocalProperties.getProperty('uploadUserName', _uploadUserName)
