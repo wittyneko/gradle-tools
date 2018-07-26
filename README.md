@@ -1,74 +1,151 @@
 # gradle-tools
 
 #### 项目介绍
-gradle-tools 简化打包和统一版本
 
-#### 软件架构
-软件架构说明
+`gradle-tools` 能帮助简化 `Gradle` 配置和统一管理依赖版本
 
+#### 结构说明
 
-#### 安装教程
+- `properties.groovy` 用于读取 `.properties` 文件的扩展工具
+- `config.groovy` 读取解析 Android 版本配置和管理 Maven 仓库地址
+- `dependencies.groovy` 依懒版本管理
+- `upload.gradle` 打包工具
+- `config.properties` 配置文件模板
 
-#### 使用说明
+其中 `properties.groovy` 和 `config.groovy` 可独立使用，`dependencies.groovy` 和 `upload.gradle` 依懒前者的扩展属性
 
-1). `config.groovy` Android 编译环境和Maven库配置
+配置解析优先级 `local.properties` > `config.properties` > `config.groovy`
 
-- 直接使用
-```gardle
+#### 导入说明
+参考例子[ktx-base](https://github.com/wittyneko/ktx-base)
+
+`gradle-tools` 提供多种导入方式，修改根项目 `build.gradle` 以下分别进行介绍
+
+1). **通过网络引用**
+
+```gradle
 buildscript {
-    apply from: "https://gitee.com/wittyneko/gradle-tools/raw/master/config.groovy"
+
+    ...
+
+    //apply from: "https://gitee.com/wittyneko/gradle-tools/raw/gitee/properties.groovy"
+    apply from: "https://github.com/wittyneko/gradle-tools/raw/github/properties.groovy"
+    apply from: "$configPath/config.groovy"
+    apply from: "$configPath/dependencies.groovy"
     ext.kotlin_version = androidcfg.kotlin_version
+
     repositories {
-        maven {url maven.aliyunMaven}
+        maven { url uploadMaven }
+        maven { url uploadMavenSnapshots }
+        maven { url rootProject.maven.aliyunMaven }
         google()
         jcenter()
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.3'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.15'
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
+    ...
+
 }
 
 allprojects {
     repositories {
+        maven { url uploadMaven }
+        maven { url uploadMavenSnapshots }
+        maven { url rootProject.maven.aliyunMaven }
         google()
         jcenter()
     }
 }
+```
+最简单的方式，什么都不需要配置只要你能联网，目前支持[github](https://github.com/wittyneko/gradle-tools)或[gitee](https://gitee.com/wittyneko/gradle-tools) 引用
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+2). **项目内引用，将需要用到的文件复制到项目根目录**
+
+```gradle
+buildscript {
+
+    ...
+
+    apply from: "properties.groovy"
+    apply from: "$configPath/config.groovy"
+    apply from: "$configPath/dependencies.groovy"
+    ext.kotlin_version = androidcfg.kotlin_version
+
+    repositories {
+        maven { url uploadMaven }
+        maven { url uploadMavenSnapshots }
+        maven { url rootProject.maven.aliyunMaven }
+        google()
+        jcenter()
+    }
+
+    ...
+
+}
+
+allprojects {
+    repositories {
+        maven { url uploadMaven }
+        maven { url uploadMavenSnapshots }
+        maven { url rootProject.maven.aliyunMaven }
+        google()
+        jcenter()
+    }
+}
+```
+简单粗暴，不需要担心网络问题可随意修改脚本，但是新功能和优化更新不及时，对比前面配置只改了个链接
+
+3). **指定引用**
+
+- 克隆当前项目到指定位置( eg. 系统用户目录 )
+- 复制 `properties.groovy` 和 `config.properties` 到项目根目录
+- 修改 `config.properties` 的 `configPath` 为文件所在路径( eg. `configPath=~/gradle-tools` )，`~` 指代系统用户目录
+- 配置与第二种相同
+
+当然配置也可以设置在 `local.properties` 如果都存在优先使用 `local.properties` 的配置，优先级在结构说明已经介绍
+
+这样设计是为了保证通用性，`config.properties` 指定为网络引用提交到远程仓库，
+别人可直接编译运行，`local.properties` 指定到本地引用可离线使用
+
+#### 使用说明
+
+1). **config.groovy 编译环境和Maven库配置**
+
+修改 Android 模块的 `build.gradle` 配置为如下
+```gradle
+
+android {
+    compileSdkVersion androidcfg.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion androidcfg.minSdkVersion
+        targetSdkVersion androidcfg.targetSdkVersion
+        versionCode androidcfg.versionCode
+        versionName androidcfg.versionName
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    
+    ...
 }
 
 ```
-- 复制到项目根目录，替换链接为如下其中一个
-```gradle
-apply from: "config.groovy"
-apply from: "$rootDir/config.groovy"
-```
+之后需要修改版本的时候只要修改 `config.properties` 或 `local.properties` 的配置，
+再也不用担心 Android Studio 修改了 gradle 脚本需要同步工程了，两个配置文件规则同上
 
-2). `upload.gradle` 打包上传到Maven库
+2). **upload.gradle 打包上传到Maven库**
 
-- 直接使用
 ```gradle
-apply from: "https://gitee.com/wittyneko/gradle-tools/raw/master/upload.gradle"
+apply from: "$configPath/upload.gradle"
 
 group = "cn.wittyneko"
 archivesBaseName = "ktx-base"
 version = "1.0.0-SNAPSHOT"
 ```
-- 复制到项目根目录
-```gradle
-apply from: "$rootDir/upload.gradle"
+打包上传到 `Maven` 仓库的繁琐配置就此解决
 
-group = "cn.wittyneko"
-archivesBaseName = "ktx-base"
-version = "1.0.0-SNAPSHOT"
-```
+3). **dependencies.groovy 管理依懒**
+
+之后再补上, 这个应该很多人都知道
 
 #### 参与贡献
 
@@ -76,13 +153,3 @@ version = "1.0.0-SNAPSHOT"
 2. 新建 Feat_xxx 分支
 3. 提交代码
 4. 新建 Pull Request
-
-
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [http://git.mydoc.io/](http://git.mydoc.io/)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
