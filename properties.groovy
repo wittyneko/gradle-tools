@@ -55,9 +55,6 @@ ext {
         if (configPath.startsWith('~')) {
             configPath = "${userHome}${configPath.substring(1)}"
         }
-        if (configPath.startsWith('http')) {
-            configPath = "$configPath/raw/master"
-        }
         println configPath
     }
 }
