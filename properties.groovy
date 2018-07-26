@@ -49,7 +49,7 @@ ext {
 
 ext {
     if (!rootProject.hasProperty('configPath')) {
-        def __configPath = "https://gitee.com/wittyneko/gradle-tools/raw/master"
+        def __configPath = "https://github.com/wittyneko/gradle-tools/raw/master"
         def _configPath = _ConfigProperties.getProperty('configPath', __configPath)
         configPath = _LocalProperties.getProperty('configPath', _configPath)
         if (configPath.startsWith('~')) {
