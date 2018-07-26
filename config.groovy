@@ -74,7 +74,7 @@ def get_GoogleConnected() {
     if (!rootProject.hasProperty('googleConnected')) {
         def result = 'curl -I -m 3 -o /dev/null -s -w %{http_code} www.google.com'.execute().text
         def googleConnected = result == '200'
-        println "$result, $googleConnected"
+        println "googleConnected: $result, $googleConnected"
         return googleConnected
     }
     return googleConnected
@@ -82,13 +82,26 @@ def get_GoogleConnected() {
 
 ext {
     userHome = _UserHome
-    localProperties = _LocalProperties
     configProperties = _ConfigProperties
+    localProperties = _LocalProperties
     sdkPath = _SdkPath
     googleConnected = _GoogleConnected
 }
 
-def __configPath = "$rootDir"
+ext {
+    if (!rootProject.hasProperty('configPath')) {
+        def __configPath = "$rootDir"
+        def _configPath = _ConfigProperties.getProperty('configPath', __configPath)
+        configPath = _LocalProperties.getProperty('configPath', _configPath)
+        if (configPath.startsWith('~')) {
+            configPath = "${userHome}${configPath.substring(1)}"
+        }
+        if (configPath.startsWith('http')) {
+            configPath = "$configPath/raw/master"
+        }
+        println configPath
+    }
+}
 
 def __localMavenable = false
 def __localMavenHost = 'http://192.168.1.187:8081'
@@ -111,7 +124,6 @@ def __androidcfg = [
 ]
 
 
-def _configPath = _ConfigProperties.getProperty('configPath', __configPath)
 
 def _localMavenable = _ConfigProperties.getOrDefault('localMavenable', __localMavenable)
 def _localMavenHost = _ConfigProperties.getProperty('localMavenHost', __localMavenHost)
@@ -134,13 +146,6 @@ def _androidcfg = [
 ]
 
 ext {
-    configPath = _LocalProperties.getProperty('configPath', _configPath)
-    if (configPath.startsWith('~')) {
-        configPath = "${userHome}${configPath.substring(1)}"
-    }
-    if (configPath.startsWith('http')) {
-        configPath = "$configPath/raw/master"
-    }
 
     localMavenable = Boolean.valueOf(_LocalProperties.getOrDefault('localMavenable', _localMavenable))
     localMavenHost = _LocalProperties.getProperty('localMavenHost', _localMavenHost)
