@@ -12,11 +12,13 @@ def get_UserHome() {
 def get_ConfigProperties() {
     if (!rootProject.hasProperty('configProperties')) {
 
-        Properties properties = new Properties()
-        File f = rootProject.file('config.properties')
+        def properties = new Properties()
+        def f = rootProject.file('config.properties')
         if (f.isFile()) {
             println("configProperties: ${f.absolutePath}")
-            properties.load(f.newDataInputStream())
+            f.withInputStream {
+                properties.load(it)
+            }
         }
         return properties
     }
@@ -30,7 +32,9 @@ def get_LocalProperties() {
         File f = rootProject.file('local.properties')
         if (f.isFile()) {
             println("localProperties: ${f.absolutePath}")
-            properties.load(f.newDataInputStream())
+            f.withInputStream {
+                properties.load(it)
+            }
         }
         return properties
     }
