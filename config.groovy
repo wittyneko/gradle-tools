@@ -72,10 +72,30 @@ def get_SdkPath() {
 //是否能访问Google
 def get_GoogleConnected() {
     if (!rootProject.hasProperty('googleConnected')) {
-        def result = 'curl -I -m 3 -o /dev/null -s -w %{http_code} www.google.com'.execute().text
-        def googleConnected = result == '200'
-        println "googleConnected: $result, $googleConnected"
-        return googleConnected
+        //def proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("127.0.0.1", 1080))
+
+        def connection = new URL("https://www.google.com").openConnection()
+        def time = System.currentTimeMillis()
+        try {
+
+            // Plan A
+            connection.connectTimeout = 3 *1000
+            connection.connect()
+            def success = connection.responseCode == 200
+            println "googleConnected: ${connection.responseCode}, $success, ${System.currentTimeMillis() -time}"
+            return success
+        } catch (Throwable e) {
+
+            // Plan B
+            //time = System.currentTimeMillis()
+            //def result = 'curl -I -m 3 -o /dev/null -s -w %{http_code} www.google.com'.execute().text
+            //def success = result == '200'
+            //println "googleConnected: $result, $success, ${System.currentTimeMillis() -time}"
+            //return success
+
+            println "googleConnected: ${e.message}, ${System.currentTimeMillis() -time}"
+            return false
+        }
     }
     return googleConnected
 }
