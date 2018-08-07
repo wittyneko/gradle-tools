@@ -2,27 +2,26 @@ apply from: "$configPath/config.groovy"
 ext {
 
     dependencies_ver = [
-            "support"     : androidcfg.supportVersion,
-            "kotlin"      : androidcfg.kotlin_stdlib,
-            "anko"        : androidcfg.anko_version,
-            "rxlifecycle" : "0.6.1",
-            "rxlifecycle2": "2.0.1",
-            "rxbinding"   : "1.0.1",
-            "rxbinding2"  : "2.0.0",
-            "dagger2"     : "2.11",
-            "retrofit"    : "2.3.0",
-            "glide"       : "4.3.1",
+            "support"          : androidcfg.supportVersion,
+            "kotlin"           : androidcfg.kotlin_version,
+            "anko"             : androidcfg.anko_version,
+
+            "lifecycle_version": "1.1.1",
+            "rxlifecycle"      : "0.6.1",
+            "rxlifecycle2"     : "2.0.1",
+            "rxbinding"        : "1.0.1",
+            "rxbinding2"       : "2.0.0",
+            "dagger2"          : "2.11",
+            "retrofit"         : "2.3.0",
+            "glide"            : "4.3.1",
     ]
 
     dependencies_map = [
-            ////// ====== apt ====== ///////
-
-            "databinding-compile"            : "com.android.databinding:compiler:$androidcfg.pluginVersion",
 
             ////// ====== system ====== ///////
 
             "multidex"                       : "com.android.support:multidex:+",
-            "constraint-layout"              : "com.android.support.constraint:constraint-layout:1.0.2",
+            "constraint-layout"              : "com.android.support.constraint:constraint-layout:1.1.2",
             "percent"                        : "com.android.support:percent:${dependencies_ver['support']}",
             "support-v4"                     : "com.android.support:support-v4:${dependencies_ver['support']}",
             "appcompat-v7"                   : "com.android.support:appcompat-v7:${dependencies_ver['support']}",
@@ -32,8 +31,13 @@ ext {
             "recyclerview-v7"                : "com.android.support:recyclerview-v7:${dependencies_ver['support']}",
             "support-annotations"            : "com.android.support:support-annotations:${dependencies_ver['support']}",
 
+            // ViewModel and LiveData
+            "lifecycle-extensions"           : "android.arch.lifecycle:extensions:${dependencies_ver['lifecycle_version']}",
+            "lifecycle-runtime"              : "android.arch.lifecycle:runtime:${dependencies_ver['lifecycle_version']}",
+            "lifecycle-common-java8"         : "android.arch.lifecycle:common-java8:${dependencies_ver['lifecycle_version']}",
+
             "kotlin-stdlib"                  : "org.jetbrains.kotlin:kotlin-stdlib:${dependencies_ver['kotlin']}",
-            "kotlin-stdlib-jre7"             : "org.jetbrains.kotlin:kotlin-stdlib-jar7:${dependencies_ver['kotlin']}",
+            "kotlin-stdlib-jdk7"             : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${dependencies_ver['kotlin']}",
 
             // Anko
             "anko"                           : "org.jetbrains.anko:anko:${dependencies_ver['anko']}",
@@ -149,5 +153,12 @@ ext {
             ////// ====== local library ====== ////////
 
             "junit"                          : "junit:junit:4.12"
+    ]
+
+    dependencies_apt = [
+            ////// ====== apt ====== ///////
+
+            "databinding-compiler": "com.android.databinding:compiler:$androidcfg.pluginVersion",
+            "lifecycle-compiler"  : "android.arch.lifecycle:compiler:${dependencies_ver['lifecycle_version']}",
     ]
 }
