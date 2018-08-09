@@ -25,7 +25,6 @@ ext {
             "percent"                        : "com.android.support:percent:${dependencies_ver['support']}",
             "support-v4"                     : "com.android.support:support-v4:${dependencies_ver['support']}",
             "appcompat-v7"                   : "com.android.support:appcompat-v7:${dependencies_ver['support']}",
-            "annotations"                    : "com.android.support:support-annotations:${dependencies_ver['support']}",
             "design"                         : "com.android.support:design:${dependencies_ver['support']}",
             "cardview-v7"                    : "com.android.support:cardview-v7:${dependencies_ver['support']}",
             "recyclerview-v7"                : "com.android.support:recyclerview-v7:${dependencies_ver['support']}",
@@ -149,6 +148,7 @@ ext {
             "jcip-annotations"               : 'net.jcip:jcip-annotations:1.0',
             "growingio"                      : 'com.growingio.android:vds-android-agent:0.9.104@aar',
             "aliyun-oss"                     : 'com.aliyun.dpa:oss-android-sdk:2.3.0',
+            "bugly-crashreport"              : 'com.tencent.bugly:crashreport:2.6.6.1',
             "getui"                          : 'com.getui:sdk:2.12.1.0',
             ////// ====== local library ====== ////////
 
