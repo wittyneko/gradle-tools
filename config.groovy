@@ -136,8 +136,8 @@ def __androidcfg = [
         versionCode      : 1,
         versionName      : "1.0.0",
         supportVersion   : "27.+",
-        kotlin_version   : "1.2.+",
-        anko_version     : "0.10.+",
+        kotlin_version   : "1.3.31",
+        anko_version     : "0.10.8",
 ]
 
 
@@ -194,7 +194,7 @@ ext {
             sdkMaven           : "file:${sdkPath}/extras/m2repository",
             sdkAndroidMaven    : "file:${sdkPath}/extras/android/m2repository",
             sdkGoogleMaven     : "file:${sdkPath}/extras/google/m2repository",
-            aliyunMaven        : "http://maven.aliyun.com/nexus/content/groups/public",
+            aliyunMaven        : "https://maven.aliyun.com/repository/public",
             jcenter            : "http://jcenter.bintray.com",
             mavenCenter        : "https://repo1.maven.org/maven2/",
             googleMaven        : "https://maven.google.com",
