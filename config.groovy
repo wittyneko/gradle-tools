@@ -116,6 +116,9 @@ ext {
         if (configPath.startsWith('~')) {
             configPath = "${userHome}${configPath.substring(1)}"
         }
+        if (configPath.startsWith('rootDir')) {
+            configPath = "${rootDir}${configPath.substring(7)}"
+        }
         println configPath
     }
 }
