@@ -23,7 +23,7 @@ ext {
     configProperties = loadProperties(rootProject.file('config.properties'), 'configProperties') as Properties
     localProperties = loadProperties(rootProject.file('local.properties'), 'localProperties') as Properties
 
-    configPath = confProperty('configPath', "https://github.com/wittyneko/gradle-tools/raw/master")
+    configPath = confProperty('configPath', "$rootDir/modules/github/wittyneko/gradle-tools")
     if (configPath.startsWith('~')) {
         configPath = "${userHome}${configPath.substring(1)}"
     }
