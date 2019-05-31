@@ -1,63 +1,31 @@
-//获取系统用户目录
-def get_UserHome() {
-    if (!rootProject.hasProperty('userHome')) {
-        String home = System.properties['user.home']
-        println("userHome: $home")
-        return home
-    }
-    userHome
-}
-
-//config.properties解析
-def get_ConfigProperties() {
-    if (!rootProject.hasProperty('configProperties')) {
-
-        def properties = new Properties()
-        def f = rootProject.file('config.properties')
-        if (f.isFile()) {
-            println("configProperties: ${f.absolutePath}")
-            f.withInputStream {
-                properties.load(it)
-            }
-        }
-        return properties
-    }
-    return configProperties
-}
-
-//获取local.properties解析
-def get_LocalProperties() {
-    if (!rootProject.hasProperty('localProperties')) {
-        Properties properties = new Properties()
-        File f = rootProject.file('local.properties')
-        if (f.isFile()) {
-            println("localProperties: ${f.absolutePath}")
-            f.withInputStream {
-                properties.load(it)
-            }
-        }
-        return properties
-    }
-    return localProperties
-}
-
 ext {
-    userHome = _UserHome
-    configProperties = _ConfigProperties
-    localProperties = _LocalProperties
-}
-
-ext {
-    if (!rootProject.hasProperty('configPath')) {
-        def __configPath = "$rootDir/modules/github/wittyneko/gradle-tools"
-        def _configPath = _ConfigProperties.getProperty('configPath', __configPath)
-        configPath = _LocalProperties.getProperty('configPath', _configPath)
-        if (configPath.startsWith('~')) {
-            configPath = "${userHome}${configPath.substring(1)}"
+    //解析properties文件
+    Closure loadProperties = { File f, String name = '', Project project = rootProject ->
+        project.with {
+            if (hasProperty(name)) return property(name)
+            println "loadProperties: ${name}, ${f.canonicalPath}"
+            new Properties().with { if (f.isFile()) f.withInputStream { load(it) }; delegate }
         }
-        if (configPath.startsWith('rootDir')) {
-            configPath = "${rootDir}${configPath.substring(7)}"
-        }
-        println configPath
     }
+
+    //解析properties文件参数
+    Closure confProperty = { String key, Object value ->
+        rootProject.with {
+            if (hasProperty(key)) return property(key)
+            //local.properties > config.properties
+            localProperties.getProperty(key, configProperties.getProperty(key, value))
+        }
+    }
+
+    userHome = System.properties['user.home'] //用户目录
+    println "userHome: $userHome"
+    gradleProperties = loadProperties(rootProject.file('gradle.properties'), 'gradleProperties') as Properties
+    configProperties = loadProperties(rootProject.file('config.properties'), 'configProperties') as Properties
+    localProperties = loadProperties(rootProject.file('local.properties'), 'localProperties') as Properties
+
+    configPath = confProperty('configPath', "https://github.com/wittyneko/gradle-tools/raw/master")
+    if (configPath.startsWith('~')) {
+        configPath = "${userHome}${configPath.substring(1)}"
+    }
+    println "configPath: $configPath"
 }
