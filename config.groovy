@@ -1,46 +1,3 @@
-//获取系统用户目录
-def get_UserHome() {
-    if (!rootProject.hasProperty('userHome')) {
-        String home = System.properties['user.home']
-        println("userHome: $home")
-        return home
-    }
-    userHome
-}
-
-//config.properties解析
-def get_ConfigProperties() {
-    if (!rootProject.hasProperty('configProperties')) {
-
-        def properties = new Properties()
-        def f = rootProject.file('config.properties')
-        if (f.isFile()) {
-            println("configProperties: ${f.absolutePath}")
-            f.withInputStream {
-                properties.load(it)
-            }
-        }
-        return properties
-    }
-    return configProperties
-}
-
-//获取local.properties解析
-def get_LocalProperties() {
-    if (!rootProject.hasProperty('localProperties')) {
-        Properties properties = new Properties()
-        File f = rootProject.file('local.properties')
-        if (f.isFile()) {
-            println("localProperties: ${f.absolutePath}")
-            f.withInputStream {
-                properties.load(it)
-            }
-        }
-        return properties
-    }
-    return localProperties
-}
-
 //获取Android SDK目录
 def get_SdkPath() {
     if (!rootProject.hasProperty('sdkPath')) {
@@ -100,36 +57,13 @@ def get_GoogleConnected() {
     return googleConnected
 }
 
-ext {
-    userHome = _UserHome
-    configProperties = _ConfigProperties
-    localProperties = _LocalProperties
-    sdkPath = _SdkPath
-    googleConnected = _GoogleConnected
-}
+def _localMavenable = false
+def _localMavenHost = 'http://192.168.1.187:8081'
+def _defaultMaven = 'http://maven.aliyun.com/nexus/content/groups/public'
+def _uploadUserName = 'admin'
+def _uploadPassword = 'admin123'
 
-ext {
-    if (!rootProject.hasProperty('configPath')) {
-        def __configPath = "$rootDir/modules/github/wittyneko/gradle-tools"
-        def _configPath = _ConfigProperties.getProperty('configPath', __configPath)
-        configPath = _LocalProperties.getProperty('configPath', _configPath)
-        if (configPath.startsWith('~')) {
-            configPath = "${userHome}${configPath.substring(1)}"
-        }
-        if (configPath.startsWith('rootDir')) {
-            configPath = "${rootDir}${configPath.substring(7)}"
-        }
-        println configPath
-    }
-}
-
-def __localMavenable = false
-def __localMavenHost = 'http://192.168.1.187:8081'
-def __defaultMaven = 'http://maven.aliyun.com/nexus/content/groups/public'
-def __uploadUserName = 'admin'
-def __uploadPassword = 'admin123'
-
-def __androidcfg = [
+def _androidcfg = [
         pluginVersion    : "3.0.0",
         //////////////////////////////////
         buildToolsVersion: "27.0.3",
@@ -143,48 +77,60 @@ def __androidcfg = [
         anko_version     : "0.10.8",
 ]
 
-
-
-def _localMavenable = _ConfigProperties.getOrDefault('localMavenable', __localMavenable)
-def _localMavenHost = _ConfigProperties.getProperty('localMavenHost', __localMavenHost)
-def _defaultMaven = _ConfigProperties.getProperty('defaultMaven', __defaultMaven)
-def _uploadUserName = _ConfigProperties.getProperty('uploadUserName', __uploadUserName)
-def _uploadPassword = _ConfigProperties.getProperty('uploadPassword', __uploadPassword)
-
-def _androidcfg = [
-        pluginVersion    : _ConfigProperties.getOrDefault('androidcfg.pluginVersion', __androidcfg.pluginVersion),
-        //////////////////////////////////
-        buildToolsVersion: _ConfigProperties.getOrDefault('androidcfg.buildToolsVersion', __androidcfg.buildToolsVersion),
-        compileSdkVersion: _ConfigProperties.getOrDefault('androidcfg.compileSdkVersion', __androidcfg.compileSdkVersion) as Integer,
-        minSdkVersion    : _ConfigProperties.getOrDefault('androidcfg.minSdkVersion', __androidcfg.minSdkVersion) as Integer,
-        targetSdkVersion : _ConfigProperties.getOrDefault('androidcfg.targetSdkVersion', __androidcfg.targetSdkVersion) as Integer,
-        versionCode      : _ConfigProperties.getOrDefault('androidcfg.versionCode', __androidcfg.versionCode) as Integer,
-        versionName      : _ConfigProperties.getOrDefault('androidcfg.versionName', __androidcfg.versionName),
-        supportVersion   : _ConfigProperties.getOrDefault('androidcfg.supportVersion', __androidcfg.supportVersion),
-        kotlin_version   : _ConfigProperties.getOrDefault('androidcfg.kotlin_version', __androidcfg.kotlin_version),
-        anko_version     : _ConfigProperties.getOrDefault('androidcfg.anko_version', __androidcfg.anko_version),
-]
-
 ext {
+    //解析properties文件
+    Closure loadProperties = { File f, String name = '', Project project = rootProject ->
+        project.with {
+            if (hasProperty(name)) return property(name)
+            println "loadProperties: ${name}, ${f.canonicalPath}"
+            new Properties().with { if (f.isFile()) f.withInputStream { load(it) }; delegate }
+        }
+    }
 
-    localMavenable = Boolean.valueOf(_LocalProperties.getOrDefault('localMavenable', _localMavenable))
-    localMavenHost = _LocalProperties.getProperty('localMavenHost', _localMavenHost)
-    defaultMaven = _LocalProperties.getProperty('defaultMaven', _defaultMaven)
-    uploadUserName = _LocalProperties.getProperty('uploadUserName', _uploadUserName)
-    uploadPassword = _LocalProperties.getProperty('uploadPassword', _uploadPassword)
+    //解析properties文件参数
+    Closure confProperty = { String key, Object value ->
+        rootProject.with {
+            if (hasProperty(key)) return property(key)
+            //local.properties > config.properties
+            localProperties.getOrDefault(key, configProperties.getOrDefault(key, value))
+        }
+    }
+
+    sdkPath = _SdkPath
+    googleConnected = _GoogleConnected
+    userHome = System.properties['user.home'] //用户目录
+    println "userHome: $userHome"
+    gradleProperties = loadProperties(rootProject.file('gradle.properties'), 'gradleProperties') as Properties
+    configProperties = loadProperties(rootProject.file('config.properties'), 'configProperties') as Properties
+    localProperties = loadProperties(rootProject.file('local.properties'), 'localProperties') as Properties
+
+    configPath = confProperty('configPath',  "$rootDir/modules/github/wittyneko/gradle-tools")
+    if (configPath.startsWith('~')) {
+        configPath = "${userHome}${configPath.substring(1)}"
+    }
+    if (configPath.startsWith('rootDir')) {
+        configPath = "${rootDir}${configPath.substring(7)}"
+    }
+    println "configPath: $configPath"
+
+    localMavenable = Boolean.valueOf(confProperty('localMavenable', _localMavenable))
+    localMavenHost = confProperty('localMavenHost', _localMavenHost)
+    defaultMaven = confProperty('defaultMaven', _defaultMaven)
+    uploadUserName = confProperty('uploadUserName', _uploadUserName)
+    uploadPassword = confProperty('uploadPassword', _uploadPassword)
 
     androidcfg = [
-            pluginVersion    : _LocalProperties.getOrDefault('androidcfg.pluginVersion', _androidcfg.pluginVersion),
+            pluginVersion    : confProperty('androidcfg.pluginVersion', _androidcfg.pluginVersion),
             //////////////////////////////////
-            buildToolsVersion: _LocalProperties.getOrDefault('androidcfg.buildToolsVersion', _androidcfg.buildToolsVersion),
-            compileSdkVersion: _LocalProperties.getOrDefault('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion) as Integer,
-            minSdkVersion    : _LocalProperties.getOrDefault('androidcfg.minSdkVersion', _androidcfg.minSdkVersion) as Integer,
-            targetSdkVersion : _LocalProperties.getOrDefault('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion) as Integer,
-            versionCode      : _LocalProperties.getOrDefault('androidcfg.versionCode', _androidcfg.versionCode) as Integer,
-            versionName      : _LocalProperties.getOrDefault('androidcfg.versionName', _androidcfg.versionName),
-            supportVersion   : _LocalProperties.getOrDefault('androidcfg.supportVersion', _androidcfg.supportVersion),
-            kotlin_version   : _LocalProperties.getOrDefault('androidcfg.kotlin_version', _androidcfg.kotlin_version),
-            anko_version     : _LocalProperties.getOrDefault('androidcfg.anko_version', _androidcfg.anko_version),
+            buildToolsVersion: confProperty('androidcfg.buildToolsVersion', _androidcfg.buildToolsVersion),
+            compileSdkVersion: confProperty('androidcfg.compileSdkVersion', _androidcfg.compileSdkVersion) as Integer,
+            minSdkVersion    : confProperty('androidcfg.minSdkVersion', _androidcfg.minSdkVersion) as Integer,
+            targetSdkVersion : confProperty('androidcfg.targetSdkVersion', _androidcfg.targetSdkVersion) as Integer,
+            versionCode      : confProperty('androidcfg.versionCode', _androidcfg.versionCode) as Integer,
+            versionName      : confProperty('androidcfg.versionName', _androidcfg.versionName),
+            supportVersion   : confProperty('androidcfg.supportVersion', _androidcfg.supportVersion),
+            kotlin_version   : confProperty('androidcfg.kotlin_version', _androidcfg.kotlin_version),
+            anko_version     : confProperty('androidcfg.anko_version', _androidcfg.anko_version),
     ]
 
     maven = [
